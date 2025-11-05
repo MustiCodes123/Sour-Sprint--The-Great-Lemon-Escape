@@ -199,7 +199,7 @@ public class CharacterInputController : MonoBehaviour
 				Slide();
 		}
 #else
-        // Use touch input on mobile
+        // Use touch input on mobile - Enhanced for tap and swipe
         if (Input.touchCount == 1)
         {
 			if(m_IsSwiping)
@@ -210,37 +210,41 @@ public class CharacterInputController : MonoBehaviour
                 // axes (otherwise we would have to swipe more vertically...)
 				diff = new Vector2(diff.x/Screen.width, diff.y/Screen.width);
 
-				if(diff.magnitude > 0.01f) //we set the swip distance to trigger movement to 1% of the screen width
+				// Reduced threshold for better responsiveness - 0.5% of screen width
+				if(diff.magnitude > 0.005f)
 				{
-					if(Mathf.Abs(diff.y) > Mathf.Abs(diff.x))
+					// Check if this is a swipe (not a tap)
+					if(diff.magnitude > 0.02f) // Swipe threshold - 2% of screen width
 					{
-						if(TutorialMoveCheck(2) && diff.y < 0)
+						if(Mathf.Abs(diff.y) > Mathf.Abs(diff.x))
 						{
-							Slide();
+							// Vertical swipe
+							if(TutorialMoveCheck(2) && diff.y < 0)
+							{
+								// Swipe down - Slide/Ground Slam
+								Slide();
+							}
+							// Removed swipe up for jump - now tap only
 						}
-						else if(TutorialMoveCheck(1))
+						else if(TutorialMoveCheck(0))
 						{
-							Jump();
+							// Horizontal swipe - Lane change
+							if(diff.x < 0)
+							{
+								ChangeLane(-1);
+							}
+							else
+							{
+								ChangeLane(1);
+							}
 						}
-					}
-					else if(TutorialMoveCheck(0))
-					{
-						if(diff.x < 0)
-						{
-							ChangeLane(-1);
-						}
-						else
-						{
-							ChangeLane(1);
-						}
-					}
 						
-					m_IsSwiping = false;
+						m_IsSwiping = false;
+					}
 				}
             }
 
-        	// Input check is AFTER the swip test, that way if TouchPhase.Ended happen a single frame after the Began Phase
-			// a swipe can still be registered (otherwise, m_IsSwiping will be set to false and the test wouldn't happen for that began-Ended pair)
+        	// Input check is AFTER the swipe test
 			if(Input.GetTouch(0).phase == TouchPhase.Began)
 			{
 				m_StartingTouch = Input.GetTouch(0).position;
@@ -248,6 +252,19 @@ public class CharacterInputController : MonoBehaviour
 			}
 			else if(Input.GetTouch(0).phase == TouchPhase.Ended)
 			{
+				// Check if this was a tap (small movement) instead of a swipe
+				if(m_IsSwiping)
+				{
+					Vector2 diff = Input.GetTouch(0).position - m_StartingTouch;
+					diff = new Vector2(diff.x/Screen.width, diff.y/Screen.width);
+					
+					// If movement was minimal, treat as tap for jump
+					if(diff.magnitude < 0.02f && TutorialMoveCheck(1))
+					{
+						Jump();
+					}
+				}
+				
 				m_IsSwiping = false;
 			}
         }

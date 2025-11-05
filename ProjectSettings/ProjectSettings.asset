@@ -1034,6 +1034,7 @@ PlayerSettings:
     Hub: 0
     Purchasing: 0
     UNet: 0
+    Unity Ads: 0
     Unity_Ads: 0
   luminIcon:
     m_Name: 
@@ -1059,7 +1060,7 @@ PlayerSettings:
   cloudProjectId: 632a0f55-70a7-4f86-ba1b-8554f364f19f
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
+  projectName: Sour Sprint The Great Lemon Escape
   organizationId: musti_plays
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 1

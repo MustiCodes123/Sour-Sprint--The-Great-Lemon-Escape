@@ -16,6 +16,7 @@ public abstract class Consumable : MonoBehaviour
         SCORE_MULTIPLAYER,
         INVINCIBILITY,
         EXTRALIFE,
+        SOUR_SPEED,
 		MAX_COUNT
     }
 

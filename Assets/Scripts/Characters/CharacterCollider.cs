@@ -127,6 +127,16 @@ public class CharacterCollider : MonoBehaviour
             if (m_Invincible || controller.IsCheatInvincible())
                 return;
 
+            // Check if this is a breakable obstacle and player is sliding
+            BreakableObstacle breakable = c.gameObject.GetComponent<BreakableObstacle>();
+            if (breakable != null && controller.isSliding)
+            {
+                // Player is sliding through a breakable obstacle - break it!
+                breakable.Break(controller);
+                return; // Don't take damage
+            }
+
+            // Normal obstacle collision - stop and take damage
             controller.StopMoving();
 
 			c.enabled = false;
@@ -165,7 +175,7 @@ public class CharacterCollider : MonoBehaviour
 
 				m_DeathData.character = controller.character.characterName;
 				m_DeathData.themeUsed = controller.trackManager.currentTheme.themeName;
-				m_DeathData.obstacleType = ob.GetType().ToString();
+				m_DeathData.obstacleType = ob != null ? ob.GetType().ToString() : "Unknown";
 				m_DeathData.coins = controller.coins;
 				m_DeathData.premium = controller.premium;
 				m_DeathData.score = controller.trackManager.score;

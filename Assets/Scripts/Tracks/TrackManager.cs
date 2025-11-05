@@ -69,7 +69,7 @@ public class TrackManager : MonoBehaviour
     public int multiplier { get { return m_Multiplier; } }
     public float currentSegmentDistance { get { return m_CurrentSegmentDistance; } }
     public float worldDistance { get { return m_TotalWorldDistance; } }
-    public float speed { get { return m_Speed; } }
+    public float speed { get { return m_Speed; } set { m_Speed = value; } }
     public float speedRatio { get { return (m_Speed - minSpeed) / (maxSpeed - minSpeed); } }
     public int currentZone { get { return m_CurrentZone; } }
 
