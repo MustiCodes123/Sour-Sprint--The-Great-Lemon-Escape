@@ -49,7 +49,8 @@ public class ShopAccessoriesList : ShopList
             GameObject header = op.Result;
             header.transform.SetParent(listRoot, false);
             ShopItemListItem itmHeader = header.GetComponent<ShopItemListItem>();
-            itmHeader.nameText.text = c.characterName;
+            // Display "Trash Tabby" instead of "Trash Cat" for this specific character
+            itmHeader.nameText.text = c.characterName == "Trash Cat" ? "Trash Tabby" : c.characterName;
 
             prefabItem.InstantiateAsync().Completed += (innerOp) =>
             {

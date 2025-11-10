@@ -66,7 +66,9 @@ public class Leaderboard : MonoBehaviour
 		    if (PlayerData.instance.highscores.Count > currentHighScore)
 		    {
 		        hs.gameObject.SetActive(true);
-		        hs.playerName.text = PlayerData.instance.highscores[currentHighScore].name;
+		        // Display "Trash Tabby" instead of "Trash Cat" for this specific character in leaderboard
+		        string displayName = PlayerData.instance.highscores[currentHighScore].name;
+		        hs.playerName.text = displayName == "Trash Cat" ? "Trash Tabby" : displayName;
 		        hs.number.text = (localStart + i + 1).ToString();
 		        hs.score.text = PlayerData.instance.highscores[currentHighScore].score.ToString();
 

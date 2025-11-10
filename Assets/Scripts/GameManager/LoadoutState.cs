@@ -291,7 +291,8 @@ public class LoadoutState : AState
                         Addressables.ReleaseInstance(m_Character);
 
                     m_Character = newChar;
-                    charNameDisplay.text = c.characterName;
+                    // Display "Trash Tabby" instead of "Trash Cat" for this specific character
+                    charNameDisplay.text = c.characterName == "Trash Cat" ? "Trash Tabby" : c.characterName;
 
                     m_Character.transform.localPosition = Vector3.right * 1000;
                     //animator will take a frame to initialize, during which the character will be in a T-pose.

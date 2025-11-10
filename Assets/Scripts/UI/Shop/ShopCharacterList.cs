@@ -34,7 +34,8 @@ public class ShopCharacterList : ShopList
                     ShopItemListItem itm = newEntry.GetComponent<ShopItemListItem>();
 
                     itm.icon.sprite = c.icon;
-                    itm.nameText.text = c.characterName;
+                    // Display "Trash Tabby" instead of "Trash Cat" for this specific character
+                    itm.nameText.text = c.characterName == "Trash Cat" ? "Trash Tabby" : c.characterName;
                     itm.pricetext.text = c.cost.ToString();
 
                     itm.buyButton.image.sprite = itm.buyButtonSprite;

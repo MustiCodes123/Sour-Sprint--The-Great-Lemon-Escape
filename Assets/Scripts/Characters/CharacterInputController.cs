@@ -198,43 +198,112 @@ public class CharacterInputController : MonoBehaviour
 			if(!m_Sliding)
 				Slide();
 		}
+		
+		// SIMULATOR SUPPORT: Allow mouse to simulate touch in editor for testing
+		#if UNITY_EDITOR
+		if(Input.GetMouseButtonDown(0))
+		{
+			m_StartingTouch = Input.mousePosition;
+			m_IsSwiping = true;
+			Debug.Log($"[MOUSE SIMULATOR] Mouse down at {m_StartingTouch}");
+		}
+		else if(Input.GetMouseButtonUp(0) && m_IsSwiping)
+		{
+			Vector2 diff = (Vector2)Input.mousePosition - m_StartingTouch;
+			Vector2 diffNormalized = new Vector2(diff.x/Screen.width, diff.y/Screen.width);
+			
+			Debug.Log($"[MOUSE SIMULATOR] Mouse up - Diff: {diff}, Normalized: {diffNormalized}, Magnitude: {diffNormalized.magnitude}");
+			
+			// Check if this is a swipe or tap
+			if(diffNormalized.magnitude > 0.02f) // Swipe
+			{
+				if(Mathf.Abs(diffNormalized.y) > Mathf.Abs(diffNormalized.x))
+				{
+					// Vertical swipe
+					if(TutorialMoveCheck(2) && diffNormalized.y < 0)
+					{
+						Debug.Log("[MOUSE SIMULATOR] SWIPE DOWN - Sliding");
+						Slide();
+					}
+				}
+				else if(TutorialMoveCheck(0))
+				{
+					// Horizontal swipe
+					if(diffNormalized.x < 0)
+					{
+						Debug.Log("[MOUSE SIMULATOR] SWIPE LEFT");
+						ChangeLane(-1);
+					}
+					else
+					{
+						Debug.Log("[MOUSE SIMULATOR] SWIPE RIGHT");
+						ChangeLane(1);
+					}
+				}
+			}
+			else if(TutorialMoveCheck(1)) // Tap
+			{
+				Debug.Log("[MOUSE SIMULATOR] TAP - Jumping");
+				Jump();
+			}
+			
+			m_IsSwiping = false;
+		}
+		#endif
 #else
-        // Use touch input on mobile - Enhanced for tap and swipe
+        // Use touch input on mobile - Enhanced for tap and swipe with debugging
         if (Input.touchCount == 1)
         {
+			Touch touch = Input.GetTouch(0);
+			
+			// DEBUG: Log touch phase
+			if(touch.phase == TouchPhase.Began)
+			{
+				Debug.Log($"[TOUCH] Touch Began at {touch.position}");
+			}
+			
 			if(m_IsSwiping)
 			{
-				Vector2 diff = Input.GetTouch(0).position - m_StartingTouch;
+				Vector2 diff = touch.position - m_StartingTouch;
+				Vector2 diffNormalized = new Vector2(diff.x/Screen.width, diff.y/Screen.width);
 
-				// Put difference in Screen ratio, but using only width, so the ratio is the same on both
-                // axes (otherwise we would have to swipe more vertically...)
-				diff = new Vector2(diff.x/Screen.width, diff.y/Screen.width);
+				// DEBUG: Log swipe progress during movement
+				if(touch.phase == TouchPhase.Moved)
+				{
+					Debug.Log($"[TOUCH] Swiping - Diff: {diff}, Normalized: {diffNormalized}, Magnitude: {diffNormalized.magnitude}");
+				}
 
 				// Reduced threshold for better responsiveness - 0.5% of screen width
-				if(diff.magnitude > 0.005f)
+				if(diffNormalized.magnitude > 0.005f)
 				{
 					// Check if this is a swipe (not a tap)
-					if(diff.magnitude > 0.02f) // Swipe threshold - 2% of screen width
+					if(diffNormalized.magnitude > 0.02f) // Swipe threshold - 2% of screen width
 					{
-						if(Mathf.Abs(diff.y) > Mathf.Abs(diff.x))
+						if(Mathf.Abs(diffNormalized.y) > Mathf.Abs(diffNormalized.x))
 						{
 							// Vertical swipe
-							if(TutorialMoveCheck(2) && diff.y < 0)
+							if(TutorialMoveCheck(2) && diffNormalized.y < 0)
 							{
 								// Swipe down - Slide/Ground Slam
+								Debug.Log($"[TOUCH] SWIPE DOWN detected! Magnitude: {diffNormalized.magnitude}");
 								Slide();
 							}
-							// Removed swipe up for jump - now tap only
+							else if(diffNormalized.y > 0)
+							{
+								Debug.Log($"[TOUCH] Swipe UP detected (ignored) Magnitude: {diffNormalized.magnitude}");
+							}
 						}
 						else if(TutorialMoveCheck(0))
 						{
 							// Horizontal swipe - Lane change
-							if(diff.x < 0)
+							if(diffNormalized.x < 0)
 							{
+								Debug.Log($"[TOUCH] SWIPE LEFT detected! Magnitude: {diffNormalized.magnitude}");
 								ChangeLane(-1);
 							}
 							else
 							{
+								Debug.Log($"[TOUCH] SWIPE RIGHT detected! Magnitude: {diffNormalized.magnitude}");
 								ChangeLane(1);
 							}
 						}
@@ -245,29 +314,46 @@ public class CharacterInputController : MonoBehaviour
             }
 
         	// Input check is AFTER the swipe test
-			if(Input.GetTouch(0).phase == TouchPhase.Began)
+			if(touch.phase == TouchPhase.Began)
 			{
-				m_StartingTouch = Input.GetTouch(0).position;
+				m_StartingTouch = touch.position;
 				m_IsSwiping = true;
+				Debug.Log($"[TOUCH] Started tracking swipe from {m_StartingTouch}");
 			}
-			else if(Input.GetTouch(0).phase == TouchPhase.Ended)
+			else if(touch.phase == TouchPhase.Ended)
 			{
 				// Check if this was a tap (small movement) instead of a swipe
 				if(m_IsSwiping)
 				{
-					Vector2 diff = Input.GetTouch(0).position - m_StartingTouch;
-					diff = new Vector2(diff.x/Screen.width, diff.y/Screen.width);
+					Vector2 diff = touch.position - m_StartingTouch;
+					Vector2 diffNormalized = new Vector2(diff.x/Screen.width, diff.y/Screen.width);
+					
+					Debug.Log($"[TOUCH] Touch Ended - Diff: {diff}, Normalized Magnitude: {diffNormalized.magnitude}");
 					
 					// If movement was minimal, treat as tap for jump
-					if(diff.magnitude < 0.02f && TutorialMoveCheck(1))
+					if(diffNormalized.magnitude < 0.02f && TutorialMoveCheck(1))
 					{
+						Debug.Log($"[TOUCH] TAP detected! Jumping...");
 						Jump();
+					}
+					else
+					{
+						Debug.Log($"[TOUCH] Movement too large for tap ({diffNormalized.magnitude}), treated as swipe");
 					}
 				}
 				
 				m_IsSwiping = false;
 			}
         }
+		else if(Input.touchCount == 0)
+		{
+			// Reset swipe state if no touches
+			m_IsSwiping = false;
+		}
+		else if(Input.touchCount > 1)
+		{
+			Debug.Log($"[TOUCH] Multiple touches detected ({Input.touchCount}), ignoring");
+		}
 #endif
 
         Vector3 verticalTargetPosition = m_TargetPosition;
